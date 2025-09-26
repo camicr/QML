@@ -144,9 +144,9 @@ class QNN_0_Sum(nn.Module):
                           gm3]  # Sz_01
             
         
-        generators_enc = generatorsYYYZ
+        generators_enc = generators12345678
         
-        generators_var = generatorsYYYZ
+        generators_var = generators12345678
             
         
         self.register_buffer("gens_enc", torch.stack(generators_enc[:self.num_features]))  # [F, 3, 3]
@@ -250,6 +250,8 @@ class QNN_0_Prod(nn.Module):
                          Sz02,   # RZ_02
                          Sz12]   # RZ_12
         
+        
+        # C43
         generatorsYYYZ = [gm2,   # RY_01
                           gm5,   # RY_02
                           gm7,   # RY_12
@@ -259,10 +261,18 @@ class QNN_0_Prod(nn.Module):
                          gm3,    # RZ_01
                          gm7,    # RY_12
                          Sz12]   # RZ_12
+        
+        generators_genEuler = [gm8,
+                               gm3, 
+                               gm2,
+                               gm3,
+                               gm5,
+                               gm3,
+                               gm2,
+                               gm3]
 
-
-        generators_enc = generatorsYYY
-        generators_var = generatorsYYY
+        generators_enc = generators_genEuler
+        generators_var = generators_genEuler
      
         # Subset para codificación, todos para la parte variacional
         self.register_buffer("gens_enc", torch.stack(generators_enc[:self.num_features]))  # [F, 3, 3]
@@ -392,40 +402,41 @@ LR           = 0.006
 SAVE_EVERY   = 150
 NUM_FEATURES = 4
 NUM_PARAMS   = 4
-CONFIG       = 42
+CONFIG       = 40
 
 BASE_SAVE_DIR = "/Users/ccristiano/Documents/Codigos/QML/Iris/qutrit/data/TestConvergence_SequentialTraining"
 os.makedirs(BASE_SAVE_DIR, exist_ok=True)
 
 
 # Tracking (Option 1)
-results_all = []
-best_params_by_param = {}
-best_loss = float("inf")
-best_params = None
-best_train_acc = 0.0
-best_init_weights = None
-best_training_time = None
-best_so_far_rows = [] 
-log_progress = []
-chunk = 1
-
-# Tracking (Option 2)
-# import ast
 # results_all = []
 # best_params_by_param = {}
-# metrics_file = f"{BASE_SAVE_DIR}/modelo_optimo_NUM_FEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}_metrics.csv"
-# df_prev = pd.read_csv(metrics_file)
-# best_loss = float(df_prev["Loss"].iloc[0])
-# best_train_acc = float(df_prev["TrainAcc"].iloc[0])
-# best_init_weights = ast.literal_eval(df_prev["InitWeights"].iloc[0])
-# best_init_weights = [torch.tensor(w, dtype=torch.float32) for w in best_init_weights]
-# best_params = torch.load(f"{BASE_SAVE_DIR}/params_NUM_FEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}.pt")
-# print(f"📂 Cargado mejor modelo anterior: loss={best_loss:.6f}, acc={best_train_acc:.2f}%")
+# best_loss = float("inf")
+# best_params = None
+# best_train_acc = 0.0
+# best_init_weights = None
 # best_training_time = None
 # best_so_far_rows = [] 
 # log_progress = []
-# chunk = 1
+# chunk = 8
+
+# Tracking (Option 2)
+import ast
+results_all = []
+best_params_by_param = {}
+metrics_file = f"{BASE_SAVE_DIR}/metrics_NUMFEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}_LAYERS_{LAYERS}_{CONFIG}.csv"
+df_prev = pd.read_csv(metrics_file)
+best_loss = float(df_prev["Loss"].iloc[0])
+best_train_acc = float(df_prev["TrainAcc"].iloc[0])
+best_init_weights = ast.literal_eval(df_prev["InitWeights"].iloc[0])
+best_init_weights = [torch.tensor(w, dtype=torch.float32) for w in best_init_weights]
+best_params = torch.load(f"{BASE_SAVE_DIR}/params_NUM_FEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}_LAYERS_{LAYERS}_{CONFIG}.pt")
+print(f"📂 Cargado mejor modelo anterior: loss={best_loss:.6f}, acc={best_train_acc:.2f}%")
+best_training_time = None
+best_so_far_rows = [] 
+log_progress = []
+chunk = 14
+TRIAL_OFFSET = 1950
 
 # Dataset
 X, y, exp_var = load_dataset(NUM_FEATURES)
@@ -492,7 +503,7 @@ for trial in range(1, N_TRIALS + 1):
     # Progress log
     log_progress.append({
         "NUM_FEATURES": NUM_FEATURES,
-        "Trial": trial,
+        "Trial": trial + TRIAL_OFFSET,
         "BestTrainLoss": best_loss,
         "BestTrainAcc": best_train_acc,
         "Time": time_end_trial
@@ -564,7 +575,7 @@ def eval_loss_full(dataloader, model):
     return tot / max(n, 1)
 
 # Configs
-N_TRIALS     = 1050
+N_TRIALS     = 4200
 EPOCHS       = 200
 BATCH_SIZE   = 32
 LAYERS       = 6
@@ -572,7 +583,7 @@ LR           = 0.006
 SAVE_EVERY   = 150
 NUM_FEATURES = 4
 NUM_PARAMS   = 4
-CONFIG       = 40
+CONFIG       = 44
 
 BASE_SAVE_DIR = "/Users/ccristiano/Documents/Codigos/QML/Iris/qutrit/data/TestConvergence_SequentialTraining"
 os.makedirs(BASE_SAVE_DIR, exist_ok=True)
@@ -594,18 +605,20 @@ chunk = 1
 # import ast
 # results_all = []
 # best_params_by_param = {}
-# metrics_file = f"{BASE_SAVE_DIR}/modelo_optimo_NUM_FEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}_metrics.csv"
+# metrics_file = f"{BASE_SAVE_DIR}/metrics_NUMFEATURES_3_NUM_PARAMS_3_LAYERS_{LAYERS}_{CONFIG}.csv"
 # df_prev = pd.read_csv(metrics_file)
 # best_loss = float(df_prev["Loss"].iloc[0])
 # best_train_acc = float(df_prev["TrainAcc"].iloc[0])
 # best_init_weights = ast.literal_eval(df_prev["InitWeights"].iloc[0])
 # best_init_weights = [torch.tensor(w, dtype=torch.float32) for w in best_init_weights]
-# best_params = torch.load(f"{BASE_SAVE_DIR}/params_NUM_FEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}.pt")
+# best_params = torch.load(f"{BASE_SAVE_DIR}/params_NUM_FEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}_LAYERS_{LAYERS}_{CONFIG}.pt")
 # print(f"📂 Cargado mejor modelo anterior: loss={best_loss:.6f}, acc={best_train_acc:.2f}%")
 # best_training_time = None
 # best_so_far_rows = [] 
 # log_progress = []
 # chunk = 1
+
+TRIAL_OFFSET = 0
 
 # Dataset
 X, y, exp_var = load_dataset(NUM_FEATURES)
@@ -659,7 +672,7 @@ for trial in range(1, N_TRIALS + 1):
         
     # Register
     best_so_far_rows.append({
-        "Trial": trial,
+        "Trial": trial + TRIAL_OFFSET,
         "BestLossSoFar": best_loss,
         "BestTrainAccSoFar": best_train_acc
     })
@@ -721,3 +734,5 @@ pd.DataFrame(best_so_far_rows).to_csv(
     f"{BASE_SAVE_DIR}/best_so_far_NUMFEATURES_{NUM_FEATURES}_NUM_PARAMS_{NUM_PARAMS}_LAYERS_{LAYERS}_{CONFIG}.csv",
     index=False
 )
+
+#%%

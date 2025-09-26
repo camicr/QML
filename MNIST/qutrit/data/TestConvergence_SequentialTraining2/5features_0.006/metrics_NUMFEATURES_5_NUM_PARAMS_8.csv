@@ -1,2 +1,0 @@
-NUM_FEATURES,NUM_PARAMS,FinalTrainLossAvg,FinalTestLossAvg,TrainAcc,TestAcc,TestF1,TestPrecision,TestRecall,CohenKappa,MatthewsCorr,TrainTimeSec
-5,8,0.016550343405533505,0.02190547326096782,100.0,100.0,100.0,100.0,100.0,1.0,1.0,10.23973298072815
